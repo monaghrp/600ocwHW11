@@ -31,6 +31,7 @@ class Edge(object):
        return str(self.src) + '->' + str(self.dest)
 
 class weightedEdge(Edge):
+   ##adds totalDis and outdoorDis to edge class
    def __init__(self,src,dest,totalDis,outdoorDis):
       Edge.__init__(self,src,dest)
       self.totalDis=totalDis
@@ -72,6 +73,19 @@ class Digraph(object):
        res = ''
        for k in self.edges:
            for d in self.edges[k]:
-               res = res + str(k) + '->' + str(d) + '\n'
+               res = res +str(k)+ '->' + str(d)+'\n'
        return res[:-1]
+
+class weightedDigraph(Digraph):
+   ##adds modifies addEdge function of parent class digraph
+   ##children of a node now contains array with dest node and distances
+   def __init__(self):
+      Digraph.__init__(self)
+   def addEdge(self, edge):
+      src = edge.getSource()
+      dest = edge.getDestination()
+      if not(src in self.nodes and dest in self.nodes):
+         raise ValueError('Node not in graph')
+      self.edges[src].append([dest,[edge.getTotalDis(),edge.getOutdoorDis()]])
+      
 

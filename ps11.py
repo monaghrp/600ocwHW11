@@ -7,7 +7,7 @@
 #
 
 import string
-from graph import Digraph, Edge, Node, weightedEdge
+from graph import Digraph, Edge, Node, weightedEdge,weightedDigraph
 
 #
 # Problem 2: Building up the Campus Map
@@ -35,14 +35,18 @@ def load_map(mapFilename):
         a directed graph representing the map
     """
     #TODO
-    edges=[]
+    campusMap=weightedDigraph()
     print "Loading map from file..."
     dataFile=open(mapFilename,'r')
     
     for line in dataFile:
         dataLine=string.split(line)
-        edges.append(weightedEdge(dataLine[0],dataLine[1],dataLine[2],dataLine[3]))
-    print 'edges: ' + str(edges)
+        if not campusMap.hasNode(dataLine[0]):
+            campusMap.addNode(dataLine[0])
+        if not campusMap.hasNode(dataLine[1]):
+            campusMap.addNode(dataLine[1])
+        campusMap.addEdge(weightedEdge(dataLine[0],dataLine[1],int(dataLine[2]),int(dataLine[3])))
+    return campusMap
                      
                      
         
@@ -79,8 +83,69 @@ def bruteForceSearch(digraph, start, end, maxTotalDist, maxDistOutdoors):
         maxDistOutdoors constraints, then raises a ValueError.
     """
     #TODO
-    pass
+    if (not digraph.hasNode(start)) or (not digraph.hasNode(end)):
+        raise ValueError('Node not in graph')
 
+    paths=findPaths(digraph,start,end)
+    filteredPaths=filterPaths(paths,maxTotalDist, maxDistOutdoors)
+    if filteredPaths==[]:
+        raise ValueError('No valid paths exist that meet maxTotalDist and maxDistOutdoors constraints')
+    return findShortestPath(filteredPaths)
+
+
+
+
+def findPaths(digraph, start, end):
+##returns list of lists weighted edges each with a valid path from start to end in digraph
+    validPaths=[]
+    foo=digraph.childrenOf(start)
+    
+    print 'children: ' + str(foo)
+    return validPaths
+foo=load_map('mit_map.txt')
+findPaths(foo,'54','56')
+findPaths(foo,'56','54')
+
+def filterPaths(edgesInput, maxTotalDist, maxDistOutdoors):
+##takes input list of list of weighted edges and returns list of list of edges that meet maxTotalDist and maxDistOutdoors constraints
+    filteredEdges=[]
+    for i in xrange(0,len(edgesInput)):
+        totalDist, disOutdoors=computeDist(edgesInput[i])
+        if (totalDist<=maxTotalDist) and (disOutdoors<=maxDistOutdoors):
+            filteredEdges.append(edgesInput[i])
+    return filteredEdges
+
+def computeDist(edgesInput):
+##takes a list of edges returns distance out doors and total distance
+##assumes list of edges contains a valid path from first node to end node
+    totalDist=0
+    disOutdoors=0
+    for i in xrange(0,len(edgesInput)):
+        totalDist+=edgesInput[i].getTotalDis()
+        disOutdoors+=edgesInput[i].getOutdoorDis()
+    return totalDist,disOutdoors
+##foo1=[weightedEdge(1,2,1,2),weightedEdge(1,2,1,2),weightedEdge(1,2,1,2),weightedEdge(1,2,1,2)]
+##foo2=[weightedEdge(1,2,2,3),weightedEdge(1,2,2,3),weightedEdge(1,2,2,3),weightedEdge(1,2,2,3)]
+##foo3=[weightedEdge(1,2,3,4),weightedEdge(1,2,3,4),weightedEdge(1,2,3,4),weightedEdge(1,2,3,4)]
+##foo0=[weightedEdge(1,2,4,5),weightedEdge(1,2,4,5),weightedEdge(1,2,4,5),weightedEdge(1,2,4,5)]
+##poo=[foo0,foo1,foo2,foo3]
+##foo=filterPaths(poo,8,12)
+def findShortestPath(edges):
+##take list of list of edges and returns path with smallest total distance from start to end
+    totalDist, disOutdoors=computeDist(edges[0])
+    minDist=totalDist
+    shortestPath=edges[0]
+    for i in xrange(1,len(edges)):
+       totalDist, disOutdoors=computeDist(edges[i])
+       if totalDist<minDist:
+           minDist=totalDist
+           shortestPath=edges[i]
+    return shortestPath
+
+
+
+
+    
 #
 # Problem 4: Finding the Shorest Path using Optimized Search Method
 #
