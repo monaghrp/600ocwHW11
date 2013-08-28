@@ -116,54 +116,79 @@ class path(object):
       else:
          return False
       
-   def findShortestPaths(self):
-   ##returns list of lists weighted edges each with a valid path from start to end in digraph
-      self.findPathRec(self.start,[])
-
-   def findPathRec(self,presentNode,nodeList):
-    ##print 'made a recursive call'
-    children=self.graph.childrenOf(presentNode)
-    ##print foo
-    ##print 'children length: ' + str(len(foo))
-    for i in xrange(0,len(children)):
-        ##print 'iteration: ' + str(i)
-        newNodeList=list(nodeList)
-        newNodeList.append(weightedEdge(presentNode,children[i][0],children[i][1][0],children[i][1][1]))
-        ##print temp
-        for j in xrange(0,len(newNodeList)):
-            if (newNodeList[j].getSource()==children[i][0]):
-                print 'found a loop'
-                return None
-
-        if (children[i][0]==self.end):
-            print 'found the end'
+   def findShortestPathsBFS(self,presentNode,nodeList):
+      children=self.graph.childrenOf(presentNode)
+      ##check to see if any of the children are the end
+      for i in xrange(0,len(children)):
+         newNodeList=list(nodeList)
+         newNodeList.append(weightedEdge(presentNode,children[i][0],children[i][1][0],children[i][1][1]))
+         ##self.printNodeList(newNodeList)
+         if (children[i][0]==self.end):
+            ##print 'found the end'
             
             if self.checkConstraint(newNodeList):
-               print 'passes constraint'
+               ##print 'passes constraint'
                totalDist,disOutdoors=self.computeDist(newNodeList)
                if totalDist<self.totalDist:
-                  print 'found new shortest path'
-                  self.shortestPath=newNodeList
+                  ##print 'found new shortest path'
+                  self.shortestPath=list(newNodeList)
                   self.totalDist=totalDist
-            ##print 'total dis: ' + str(totalDist)
-            ##for k in xrange(0,len(newNodeList)):
-            ##    print newNodeList[k]
-            ##return None
-        else:
-           print 'making recursize call'
-           self.findPathRec(children[i][0],newNodeList)
-        return None
+         else:
+            ##make a recursive call only if child is not in node list
+            if not self.checkForChildren(newNodeList,children[i][0]):
+               self.findShortestPathsBFS(children[i][0],newNodeList)
+               
+   def findShortestPathsDFS(self,presentNode,nodeList):
+      children=self.graph.childrenOf(presentNode)
+      ##check to see if any of the children are the end
+      for i in xrange(0,len(children)):
+         newNodeList=list(nodeList)
+         newNodeList.append(weightedEdge(presentNode,children[i][0],children[i][1][0],children[i][1][1]))
+         ##self.printNodeList(newNodeList)
+         if (children[i][0]==self.end):
+            ##print 'found the end'
+            
+            if self.checkConstraint(newNodeList):
+               ##print 'passes constraint'
+               totalDist,disOutdoors=self.computeDist(newNodeList)
+               if totalDist<self.totalDist:
+                  ##print 'found new shortest path'
+                  self.shortestPath=list(newNodeList)
+                  self.totalDist=totalDist
+         else:
+            ##make a recursive call only if child is not in node list
+            ##and path is shorted than existing path
+            if not self.checkForChildren(newNodeList,children[i][0]):
+               totalDist,disOutdoors=self.computeDist(newNodeList)
+               ##print 'totalDist: ' + str(totalDist)
+               ##print 'maxTotalDist: ' + str(self.maxTotalDist)
+               ##print 'disOutdoors: ' + str(disOutdoors)
+               ##print 'maxDisOutdoors: ' + str(self.maxDistOutdoors)
+               
+               if (totalDist<=self.maxTotalDist) and (disOutdoors<=self.maxDistOutdoors):
+                  ##print 'made a recursive call'
+                  self.findShortestPathsDFS(children[i][0],newNodeList)
+           
+   def checkForChildren(self,nodeList,node):
+      for i in xrange(0,len(nodeList)):
+         if nodeList[i].getSource()==node:
+            return True
+      return False
+                 
+   def printNodeList(self,nodeList):
+      for i in xrange(0,len(nodeList)):
+         print nodeList[i]
 
    def printShortestPath(self):
-      for k in xrange(0,len(self.shortestPath)):
-         print str(self.shortestPath[k].getSource())
+      print str(self.shortestPath)
+      for i in xrange(0,len(self.shortestPath)):
+         print str(self.shortestPath[i].getSource())
 
    def parseShortestPath(self):
-      self.printShortestPath()
-      for i in xrange(0,len(self.shortestPath)):
-         self.parsedShortestPath.append(self.shortestPath[i].getSource())
-      self.parsedShortestPath.append(self.shortestPath[len(self.shortestPath)-1].getDestination())
-      return self.parsedShortestPath
-                      
-   
-    
+      if not (self.shortestPath==[]):
+         for i in xrange(0,len(self.shortestPath)):
+            self.parsedShortestPath.append(self.shortestPath[i].getSource())
+         self.parsedShortestPath.append(self.shortestPath[len(self.shortestPath)-1].getDestination())
+         return self.parsedShortestPath
+      else:
+         return []
